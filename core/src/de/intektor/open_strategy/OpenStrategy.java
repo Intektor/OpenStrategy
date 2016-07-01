@@ -61,6 +61,7 @@ public class OpenStrategy extends ApplicationAdapter {
             }
         }.start();
 
+        loadGameResources();
 
     }
 
@@ -99,6 +100,7 @@ public class OpenStrategy extends ApplicationAdapter {
     private void loadGameResources() {
         spriteBatch = new SpriteBatch();
         layout = new GlyphLayout();
+        loadFonts(1);
     }
 
     private void loadFonts(float size) {
