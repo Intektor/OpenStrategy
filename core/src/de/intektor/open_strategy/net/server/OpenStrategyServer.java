@@ -54,4 +54,8 @@ public class OpenStrategyServer {
         }.start();
     }
 
+    public void stopServer() {
+        runServer = false;
+    }
+
 }

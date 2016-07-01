@@ -3,7 +3,6 @@ package de.intektor.open_strategy;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Net;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -36,6 +35,8 @@ public class OpenStrategy extends ApplicationAdapter {
     public static SpriteBatch spriteBatch;
     public static GlyphLayout layout;
 
+    private volatile boolean gameRunning = true;
+
     @Override
     public void create() {
         game = this;
@@ -52,7 +53,7 @@ public class OpenStrategy extends ApplicationAdapter {
         new Thread() {
             @Override
             public void run() {
-                while (true) {
+                while (gameRunning) {
                     Packet packet = PacketHelper.readPacket(connection.getIn());
                     if (packet != null) {
                         packet.handle(connection, Side.CLIENT);
@@ -67,12 +68,7 @@ public class OpenStrategy extends ApplicationAdapter {
 
     @Override
     public void render() {
-        Gdx.gl.glClearColor(1, 0, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        Integer a = 1;
-        Integer b = 2;
-        System.out.println(a + b + 3);
     }
 
     @Override
@@ -82,7 +78,8 @@ public class OpenStrategy extends ApplicationAdapter {
 
     @Override
     public void dispose() {
-        super.dispose();
+        gameRunning = false;
+        if (integratedServer != null) integratedServer.stopServer();
     }
 
     public static OpenStrategy getOpenStrategy() {
