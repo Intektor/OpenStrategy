@@ -15,6 +15,7 @@ public class ConnectionInfo {
     public final Socket socket;
     public final InputStream inputStream;
     public final OutputStream outputStream;
+    public boolean isActive = true;
 
     public ConnectionInfo(Socket socket) {
         this.socket = socket;

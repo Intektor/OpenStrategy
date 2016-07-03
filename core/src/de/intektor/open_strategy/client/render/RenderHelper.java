@@ -5,8 +5,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ImmediateModeRenderer20;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Polygon;
@@ -24,9 +22,6 @@ import javax.vecmath.Vector2f;
  * @author Intektor
  */
 public class RenderHelper {
-    
-
-    private static SpriteBatch spriteBatch = new SpriteBatch();
 
     public static void renderSquare(ShapeRenderer renderer, Color renderColor, float x, float y, float width, float height) {
         renderer.identity();
@@ -39,16 +34,14 @@ public class RenderHelper {
         renderSquare(renderer, color, rectangle.getX(), rectangle.getY(), rectangle.getWidth(), rectangle.getHeight());
     }
 
-    static PolygonSpriteBatch polygonBatch = new PolygonSpriteBatch();
-
     public static void drawString(float x, float y, String string, BitmapFont font, Batch batch) {
-        drawString(x, y, string, font, batch, true);
+        drawString(x, y, string, font, batch, false, false);
     }
 
-    public static void drawString(float x, float y, String string, BitmapFont font, Batch batch, boolean centerString) {
+    public static void drawString(float x, float y, String string, BitmapFont font, Batch batch, boolean centerX, boolean centerY) {
         OpenStrategy.layout.setText(font, string);
-        float rx = centerString ? x - OpenStrategy.layout.width / 2 : x;
-        float ry = centerString ? y + OpenStrategy.layout.height / 2 : y;
+        float rx = centerX ? x - OpenStrategy.layout.width / 2 : x;
+        float ry = centerY ? y + OpenStrategy.layout.height / 2 : y;
         font.draw(batch, string, rx, ry);
     }
 

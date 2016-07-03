@@ -1,4 +1,4 @@
-package de.intektor.open_strategy.client.component;
+package de.intektor.open_strategy.client.gui.component;
 
 /**
  * @author Intektor
@@ -63,7 +63,7 @@ public class GuiButton extends GuiComponent {
     }
 
     @Override
-    public void renderComponent(ShapeRenderer renderer) {
+    public void renderComponent(ShapeRenderer renderer, int mouseX, int mouseY) {
         if (this.isShown) {
             if (!drawImage) {
                 Gdx.gl.glEnable(GL20.GL_BLEND);

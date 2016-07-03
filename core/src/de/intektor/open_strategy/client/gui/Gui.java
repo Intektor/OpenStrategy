@@ -1,15 +1,15 @@
-package de.intektor.open_strategy.client;
+package de.intektor.open_strategy.client.gui;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.input.GestureDetector;
-import com.badlogic.gdx.math.Vector2;
-import de.intektor.open_strategy.client.component.GuiButton;
-import de.intektor.open_strategy.client.component.GuiComponent;
-import de.intektor.open_strategy.client.component.GuiTextField;
+import de.intektor.open_strategy.OpenStrategy;
+import de.intektor.open_strategy.client.gui.component.GuiButton;
+import de.intektor.open_strategy.client.gui.component.GuiComponent;
+import de.intektor.open_strategy.client.gui.component.GuiMultiSwitch;
+import de.intektor.open_strategy.client.gui.component.GuiTextField;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,37 +18,41 @@ import java.util.List;
 /**
  * @author Intektor
  */
-public abstract class Gui extends InputAdapter implements GestureDetector.GestureListener {
+public abstract class Gui extends InputAdapter {
 
     public List<GuiComponent> componentList = new ArrayList<GuiComponent>();
 
     public Input input;
-    protected boolean paused = false;
 
     protected int width;
     protected int height;
     protected long timeAtLastTap;
 
+    protected OpenStrategy os;
+
     public Gui() {
     }
 
     public void init() {
+        os = OpenStrategy.getOpenStrategy();
         input = Gdx.input;
         width = Gdx.graphics.getWidth();
         height = Gdx.graphics.getHeight();
         InputMultiplexer multiplexer = new InputMultiplexer();
-        GestureDetector detecto = new GestureDetector(this);
         multiplexer.addProcessor(this);
-        multiplexer.addProcessor(detecto);
         input.setInputProcessor(multiplexer);
         reInitButtons();
     }
 
-    public void render(ShapeRenderer renderer) {
+    public void render(ShapeRenderer renderer, int mouseX, int mouseY) {
+        GuiComponent prioritizedComponent = getPrioritizedComponent();
         for (GuiComponent component : this.componentList) {
-            if (component != null) {
-                component.render(renderer);
+            if (component != null && component != prioritizedComponent) {
+                component.render(renderer, mouseX, mouseY);
             }
+        }
+        if (prioritizedComponent != null) {
+            prioritizedComponent.render(renderer, mouseX, mouseY);
         }
     }
 
@@ -60,16 +64,19 @@ public abstract class Gui extends InputAdapter implements GestureDetector.Gestur
 
     public void reInitButtons() {
         this.componentList.clear();
-        this.addButtons();
+        this.addComponents();
     }
 
     public abstract void onButtonTouched(int id);
 
     public abstract int getID();
 
-    public abstract int getBasicPreviewState();
+    public abstract void addComponents();
 
-    public abstract void addButtons();
+    public void addComponent(GuiComponent component) {
+        componentList.add(component);
+        component.setGui(this);
+    }
 
     public GuiButton getButtonByID(int id) {
         for (GuiComponent c : componentList) {
@@ -93,6 +100,27 @@ public abstract class Gui extends InputAdapter implements GestureDetector.Gestur
         return null;
     }
 
+    public GuiMultiSwitch getMultiSwitchByID(int id) {
+        for (GuiComponent c : componentList) {
+            if (c instanceof GuiMultiSwitch) {
+                if (((GuiMultiSwitch) c).id == id) {
+                    return (GuiMultiSwitch) c;
+                }
+            }
+        }
+        return null;
+    }
+
+    public void setComponentPrioritized(GuiComponent component) {
+        for (GuiComponent guiComponent : componentList) {
+            if (guiComponent == component) {
+                guiComponent.setPrioritized(true);
+            } else {
+                guiComponent.setPrioritized(false);
+            }
+        }
+    }
+
     public boolean clickedOnComponent(int x, int y) {
         for (GuiComponent component : componentList) {
             if (component instanceof GuiButton) {
@@ -108,29 +136,46 @@ public abstract class Gui extends InputAdapter implements GestureDetector.Gestur
         return false;
     }
 
+    public GuiComponent getPrioritizedComponent() {
+        for (GuiComponent guiComponent : componentList) {
+            if (guiComponent.isPrioritized()) {
+                return guiComponent;
+            }
+        }
+        return null;
+    }
+
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         boolean success = false;
+        GuiComponent prioritizedComponent = getPrioritizedComponent();
         for (GuiComponent component : componentList) {
-            if (component instanceof GuiButton && ((GuiButton) component).enabled) {
-                if (component.isHoveredOver(screenX, screenY)) {
-                    deactivateAllTextFields();
-                    component.onClicked(screenX, screenY);
-                    onButtonTouched(((GuiButton) component).id);
-                    componentClicked(component, screenX, screenY);
-                    success = true;
-                }
-            } else if (component instanceof GuiTextField) {
-                if (component.isHoveredOver(screenX, screenY)) {
-                    component.onClicked(screenX, screenY);
-                    success = true;
-                    componentClicked(component, screenX, screenY);
-                }
-            } else {
-                if (component.isHoveredOver(screenX, screenY)) {
-                    component.onClicked(screenX, screenY);
-                    componentClicked(component, screenX, screenY);
-                    deactivateAllTextFields();
+            if (prioritizedComponent == null || component == prioritizedComponent) {
+                if (component instanceof GuiButton && ((GuiButton) component).enabled) {
+                    if (component.isHoveredOver(screenX, screenY)) {
+                        setComponentPrioritized(null);
+                        component.onClicked(screenX, screenY);
+                        onButtonTouched(((GuiButton) component).id);
+                        componentClicked(component, screenX, screenY);
+                        success = true;
+                    }
+                } else if (component instanceof GuiTextField) {
+                    if (component.isHoveredOver(screenX, screenY)) {
+                        component.onClicked(screenX, screenY);
+                        success = true;
+                        componentClicked(component, screenX, screenY);
+                    } else {
+                        if (component == prioritizedComponent) {
+                            setComponentPrioritized(null);
+                        }
+                    }
+                } else {
+                    if (component.isHoveredOver(screenX, screenY)) {
+                        component.onClicked(screenX, screenY);
+                        componentClicked(component, screenX, screenY);
+                    } else {
+                        setComponentPrioritized(null);
+                    }
                 }
             }
         }
@@ -139,52 +184,28 @@ public abstract class Gui extends InputAdapter implements GestureDetector.Gestur
         return success;
     }
 
-    public void deactivateAllTextFields() {
-        for (GuiTextField field : getTextFields()) {
-            if (field.isActive()) {
-                field.setActive(false);
-            }
-        }
+    public void textFieldDeactivated(GuiTextField field) {
     }
 
-    public void textFieldDeactivated(GuiTextField field) {
-
+    public void multiSwitchChanged(GuiMultiSwitch multiSwitch, int prevChoice, int currentChoice) {
     }
 
     @Override
     public boolean keyTyped(char character) {
-        if (getActiveTextField() != null) {
-            getActiveTextField().addCharacter(character);
+        GuiComponent prioritizedComponent = getPrioritizedComponent();
+        for (GuiComponent guiComponent : componentList) {
+            guiComponent.keyTyped(character, prioritizedComponent == guiComponent);
         }
         return super.keyTyped(character);
     }
 
     @Override
     public boolean keyDown(int keycode) {
-        if (keycode == Input.Keys.BACKSPACE) {
-            if (getActiveTextField() != null) {
-                getActiveTextField().removeChar();
-            }
-        } else if (keycode == Input.Keys.ENTER) {
-            input.setOnscreenKeyboardVisible(false);
-            if (getActiveTextField() != null) {
-                getActiveTextField().setActive(false);
-            }
-        } else if (keycode == Input.Keys.R) {
-            reInitButtons();
+        GuiComponent prioritizedComponent = getPrioritizedComponent();
+        for (GuiComponent guiComponent : componentList) {
+            guiComponent.keyDown(keycode, guiComponent == prioritizedComponent);
         }
         return super.keyDown(keycode);
-    }
-
-    public GuiTextField getActiveTextField() {
-        for (GuiComponent c : componentList) {
-            if (c instanceof GuiTextField) {
-                if (((GuiTextField) c).isActive()) {
-                    return (GuiTextField) c;
-                }
-            }
-        }
-        return null;
     }
 
     public List<GuiTextField> getTextFields() {
@@ -195,16 +216,6 @@ public abstract class Gui extends InputAdapter implements GestureDetector.Gestur
             }
         }
         return list;
-    }
-
-    public int getNumberOfTouches() {
-        int n = 0;
-        for (int i = 0; i < 20; i++) {
-            if (input.isTouched(i)) {
-                n++;
-            }
-        }
-        return n;
     }
 
     protected int prevX, prevY;
@@ -219,50 +230,6 @@ public abstract class Gui extends InputAdapter implements GestureDetector.Gestur
         prevX = screenX;
         prevY = screenY;
         return true;
-    }
-
-    @Override
-    public boolean touchDown(float x, float y, int pointer, int button) {
-        timeAtLastTap = System.currentTimeMillis();
-        return true;
-    }
-
-    @Override
-    public boolean tap(float x, float y, int count, int button) {
-        return true;
-    }
-
-    @Override
-    public boolean longPress(float x, float y) {
-        return true;
-    }
-
-    @Override
-    public boolean fling(float velocityX, float velocityY, int button) {
-        return true;
-    }
-
-    @Override
-    public boolean pan(float x, float y, float deltaX, float deltaY) {
-        return true;
-    }
-
-    @Override
-    public boolean panStop(float x, float y, int pointer, int button) {
-        return true;
-    }
-
-    @Override
-    public boolean zoom(float initialDistance, float distance) {
-        return true;
-    }
-
-    @Override
-    public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1, Vector2 pointer2) {
-        return true;
-    }
-
-    public void onArrowDragged(int arrowID, int prevX, int prevY, int cX, int cY) {
     }
 
     public boolean hoveredOverComponent(int x, int y) {
@@ -295,6 +262,9 @@ public abstract class Gui extends InputAdapter implements GestureDetector.Gestur
     }
 
     public void componentClicked(GuiComponent component, int mouseX, int mouseY) {
+    }
 
+    public static boolean isPointInRegion(int x, int y, int x2, int y2, int px, int py) {
+        return px >= x && px <= x2 && py >= y && py <= y2;
     }
 }

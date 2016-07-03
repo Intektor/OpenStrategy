@@ -1,7 +1,5 @@
-package de.intektor.open_strategy.client.component;
+package de.intektor.open_strategy.client.gui.component;
 
-
-import de.intektor.open_strategy.client.Gui;
 
 /**
  * @author Intektor
@@ -10,8 +8,8 @@ public class GuiNumberField extends GuiTextField {
 
     protected boolean decimal;
 
-    public GuiNumberField(int x, int y, int width, int height, int id, boolean isShown, int maxChars, String info, Gui gui, String standard, boolean decimal) {
-        super(x, y, width, height, id, isShown, maxChars, false, true, info, gui, standard);
+    public GuiNumberField(int x, int y, int width, int height, int id, boolean isShown, int maxChars, String info, String standard, boolean decimal) {
+        super(x, y, width, height, id, isShown, maxChars, false, true, info, standard);
         this.decimal = decimal;
     }
 

@@ -1,7 +1,9 @@
-package de.intektor.open_strategy.client.component;
+package de.intektor.open_strategy.client.gui.component;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import de.intektor.open_strategy.client.gui.Gui;
 
 /**
  * @author Intektor
@@ -10,7 +12,13 @@ public abstract class GuiComponent {
 
     protected int x, y, width, height, prevX, prevY;
     protected boolean isShown;
-    protected boolean isHovered = false, isDragged = false;
+    protected boolean isHovered, isDragged;
+
+    public static final Color STANDARD_OUTLINE_COLOR = new Color(0x999999ff);
+
+    protected boolean prioritized;
+
+    protected Gui gui;
 
     public GuiComponent(int x, int y, int width, int height, boolean isShown) {
         this.x = x;
@@ -28,16 +36,25 @@ public abstract class GuiComponent {
     }
 
     public boolean isHoveredOver(int mouseX, int mouseY) {
-        return mouseX > this.x && mouseX < this.x + this.width && Gdx.graphics.getHeight() - mouseY > this.y && Gdx.graphics.getHeight() - mouseY < this.y + this.height && this.isShown;
+        GuiComponent prioritizedComponent = gui.getPrioritizedComponent();
+        return Gui.isPointInRegion(x, y, x + width, y + height, mouseX, Gdx.graphics.getHeight() - mouseY) && this.isShown && (prioritizedComponent == null || prioritizedComponent == this);
     }
 
-    public void render(ShapeRenderer renderer) {
+    public void render(ShapeRenderer renderer, int mouseX, int mouseY) {
         if (isShown) {
-            renderComponent(renderer);
+            renderComponent(renderer, mouseX, mouseY);
         }
     }
 
-    protected abstract void renderComponent(ShapeRenderer renderer);
+    public void keyTyped(char c, boolean isPrioritized) {
+
+    }
+
+    public void keyDown(int keyCode, boolean isPrioritized) {
+
+    }
+
+    protected abstract void renderComponent(ShapeRenderer renderer, int mouseX, int mouseY);
 
     public GuiComponent setX(int x) {
         this.prevX = this.x;
@@ -100,5 +117,17 @@ public abstract class GuiComponent {
 
     public void onDragged(int prevX, int prevY, int cX, int cY) {
         isDragged = true;
+    }
+
+    public void setPrioritized(boolean prioritized) {
+        this.prioritized = prioritized;
+    }
+
+    public boolean isPrioritized() {
+        return prioritized;
+    }
+
+    public void setGui(Gui gui) {
+        this.gui = gui;
     }
 }
