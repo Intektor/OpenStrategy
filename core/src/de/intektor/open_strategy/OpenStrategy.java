@@ -20,10 +20,8 @@ import de.intektor.open_strategy.packet.LobbyChatMessagePacket;
 import de.intektor.open_strategy.packet.RequestIdentificationPacket;
 import de.intektor.open_strategy.player.PlayerInfo;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import static com.badlogic.gdx.Gdx.graphics;
 
@@ -43,6 +41,10 @@ public class OpenStrategy extends ApplicationAdapter {
     public static BitmapFont perfectPixel72;
 
     public static BitmapFont consolas12;
+    public static BitmapFont consolas16;
+    public static BitmapFont consolas32;
+    public static BitmapFont consolas64;
+    public static BitmapFont consolas72;
 
     public static SpriteBatch spriteBatch;
     public static GlyphLayout layout;
@@ -59,7 +61,7 @@ public class OpenStrategy extends ApplicationAdapter {
 
     private int currentGui;
 
-    private volatile List<Runnable> scheduledTasks = new ArrayList<>();
+    private volatile Queue<Runnable> tasks = new LinkedBlockingQueue<>();
 
     @Override
     public void create() {
@@ -100,10 +102,10 @@ public class OpenStrategy extends ApplicationAdapter {
     }
 
     public void updateGame() {
-        for (Runnable scheduledTask : scheduledTasks) {
-            scheduledTask.run();
+        Runnable t;
+        while ((t = tasks.poll()) != null) {
+            t.run();
         }
-        scheduledTasks.clear();
         Gui gui = guiMap.get(currentGui);
         gui.update();
     }
@@ -157,6 +159,14 @@ public class OpenStrategy extends ApplicationAdapter {
         fontGenerator = new FreeTypeFontGenerator(Gdx.files.local("assets/Consolas.ttf"));
         parameter.size = (int) (12 * size);
         consolas12 = fontGenerator.generateFont(parameter);
+        parameter.size = (int) (16 * size);
+        consolas16 = fontGenerator.generateFont(parameter);
+        parameter.size = (int) (32 * size);
+        consolas32 = fontGenerator.generateFont(parameter);
+        parameter.size = (int) (64 * size);
+        consolas64 = fontGenerator.generateFont(parameter);
+        parameter.size = (int) (72 * size);
+        consolas72 = fontGenerator.generateFont(parameter);
 
         fontGenerator.dispose();
     }
@@ -189,7 +199,6 @@ public class OpenStrategy extends ApplicationAdapter {
     }
 
     public synchronized void addScheduledTask(Runnable task) {
-        System.out.println("here");
-        scheduledTasks.add(task);
+        tasks.offer(task);
     }
 }

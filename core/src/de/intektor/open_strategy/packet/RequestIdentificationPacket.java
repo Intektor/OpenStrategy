@@ -1,5 +1,6 @@
 package de.intektor.open_strategy.packet;
 
+import de.intektor.open_strategy.OpenStrategy;
 import de.intektor.open_strategy.net.ConnectionInfo;
 import de.intektor.open_strategy.net.Side;
 import de.intektor.open_strategy.net.packet.Packet;
@@ -29,8 +30,10 @@ public class RequestIdentificationPacket implements Packet {
     @Override
     public void handle(ConnectionInfo from, Side side) {
         if (side == Side.CLIENT) {
-            Random r = new Random();
-            new IdentificationPacket("Player" + r.nextInt(10000)).sendToServer();
+            OpenStrategy.getOpenStrategy().addScheduledTask(() -> {
+                Random r = new Random();
+                new IdentificationPacket("Player" + r.nextInt(10000)).sendToServer();
+            });
         }
     }
 }

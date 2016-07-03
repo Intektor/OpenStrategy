@@ -1,15 +1,15 @@
 package de.intektor.open_strategy.net.server;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author Intektor
  */
 public class MainThread extends Thread {
 
-    OpenStrategyServer server;
-    List<Runnable> scheduledTasks = new ArrayList<>();
+    public volatile OpenStrategyServer server;
+    public volatile Queue<Runnable> tasks = new LinkedBlockingQueue<>();
 
     public MainThread(OpenStrategyServer server) {
         this.server = server;
@@ -22,12 +22,14 @@ public class MainThread extends Thread {
         }
     }
 
-    public void serverTick() {
-        scheduledTasks.forEach(Runnable::run);
-        scheduledTasks.clear();
+    public synchronized void serverTick() {
+        Runnable t;
+        while ((t = tasks.poll()) != null) {
+            t.run();
+        }
     }
 
-    public void addScheduledTask(Runnable task) {
-        scheduledTasks.add(task);
+    public synchronized void addScheduledTask(Runnable task) {
+        tasks.offer(task);
     }
 }

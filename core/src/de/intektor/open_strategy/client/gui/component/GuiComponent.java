@@ -54,6 +54,10 @@ public abstract class GuiComponent {
 
     }
 
+    public void mouseScrolled(int mouseX, int mouseY, int amt, boolean isPrioritized) {
+
+    }
+
     protected abstract void renderComponent(ShapeRenderer renderer, int mouseX, int mouseY);
 
     public GuiComponent setX(int x) {

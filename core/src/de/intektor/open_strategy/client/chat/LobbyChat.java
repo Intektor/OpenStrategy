@@ -1,7 +1,9 @@
 package de.intektor.open_strategy.client.chat;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import de.intektor.open_strategy.OpenStrategy;
@@ -20,7 +22,9 @@ public class LobbyChat extends GuiComponent {
 
     List<ChatMessage> messages = new ArrayList<>();
 
-    String currentlyWritten = "";
+    List<Character> currentlyWritten = new ArrayList<>();
+
+    int scrollAmount;
 
     public LobbyChat(int x, int y, int width, int height, boolean isShown) {
         super(x, y, width, height, isShown);
@@ -33,7 +37,26 @@ public class LobbyChat extends GuiComponent {
     @Override
     public void keyTyped(char c, boolean isPrioritized) {
         if (isPrioritized) {
-            currentlyWritten += c;
+            if (c != '\b') {
+                currentlyWritten.add(c);
+            }
+        }
+    }
+
+    @Override
+    public void mouseScrolled(int mX, int mY, int amt, boolean isPrioritized) {
+        if (Gui.isPointInRegion(x, y + 20, x + width, y + height - 20, mX, mY)) {
+            scrollAmount -= amt * 6;
+        }
+    }
+
+    @Override
+    public void onDragged(int prevX, int prevY, int cX, int cY) {
+        super.onDragged(prevX, prevY, cX, cY);
+        int dX = cX - prevX;
+        int dY = cY - prevY;
+        if (Gui.isPointInRegion(x, y + 20, x + width, y + height - 20, cX, cY)) {
+            scrollAmount -= dY;
         }
     }
 
@@ -41,10 +64,11 @@ public class LobbyChat extends GuiComponent {
     public void keyDown(int keyCode, boolean isPrioritized) {
         if (prioritized) {
             if (keyCode == Input.Keys.ENTER) {
-                new LobbyChatMessagePacket(new ChatMessage(currentlyWritten, OpenStrategy.getOpenStrategy().playerInfo)).sendToServer();
+                new LobbyChatMessagePacket(new ChatMessage(convertToString(currentlyWritten), OpenStrategy.getOpenStrategy().playerInfo)).sendToServer();
+                currentlyWritten.clear();
             } else if (keyCode == Input.Keys.BACKSPACE) {
-                if (currentlyWritten.length() > 1) {
-                    currentlyWritten = (String) currentlyWritten.subSequence(0, currentlyWritten.length() - 2);
+                if (currentlyWritten.size() > 0) {
+                    currentlyWritten.remove(currentlyWritten.size() - 1);
                 }
             }
         }
@@ -76,13 +100,28 @@ public class LobbyChat extends GuiComponent {
 
         SpriteBatch sb = OpenStrategy.spriteBatch;
         sb.begin();
-        RenderHelper.drawString(x, y + 10, currentlyWritten.equals("") ? "_" : currentlyWritten, OpenStrategy.consolas12, sb, false, true);
-
-        for (int i = 0; i < messages.size(); i++) {
-            RenderHelper.drawString(x + 1, y + height - 13 * i, messages.get(i).getMessage(), OpenStrategy.consolas12, sb, false, false);
-        }
-
+        String s = convertToString(currentlyWritten);
+        RenderHelper.drawString(x, y + 10, s.equals("") ? "_" : s, OpenStrategy.consolas16, sb, false, true);
         sb.end();
 
+        Gdx.gl.glEnable(GL20.GL_SCISSOR_TEST);
+        sb.begin();
+
+        int localY = scrollAmount;
+        for (int i = 0; i < messages.size(); i++) {
+            ChatMessage chatMessage = messages.get(i);
+            RenderHelper.drawString(x + 1, y + height - 13 * i + localY, chatMessage.getSender().playerName + ": " + chatMessage.getMessage(), OpenStrategy.consolas16, sb, false, false);
+        }
+        sb.end();
+        Gdx.gl.glScissor(x, y + 20, width, height - 20);
+        Gdx.gl.glDisable(GL20.GL_SCISSOR_TEST);
+    }
+
+    public static String convertToString(List<Character> chars) {
+        String s = "";
+        for (Character aChar : chars) {
+            s += aChar;
+        }
+        return s;
     }
 }

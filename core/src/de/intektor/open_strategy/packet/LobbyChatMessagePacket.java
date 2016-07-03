@@ -48,7 +48,6 @@ public class LobbyChatMessagePacket implements Packet {
             OpenStrategyServer server = OpenStrategy.getOpenStrategy().getIntegratedServer();
             server.thread.addScheduledTask(() -> {
                 for (ConnectionInfo connectionInfo : server.connectedPlayers.values()) {
-                    System.out.println(connectionInfo);
                     send(connectionInfo);
                 }
             });

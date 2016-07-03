@@ -30,7 +30,7 @@ public class OpenStrategyServer {
 
     ServerSocket serverSocket;
 
-    public MainThread thread;
+    public volatile MainThread thread;
 
     volatile boolean runServer = true;
 
@@ -55,7 +55,6 @@ public class OpenStrategyServer {
                 while (runServer) {
                     Socket accept = serverSocket.accept(new SocketHints());
                     ConnectionInfo connection = new ConnectionInfo(accept);
-                    System.out.println("new Connection");
                     new RequestIdentificationPacket().send(connection);
                     new Thread() {
                         @Override

@@ -121,6 +121,15 @@ public abstract class Gui extends InputAdapter {
         }
     }
 
+    @Override
+    public boolean scrolled(int amount) {
+        GuiComponent prioritizedComponent = getPrioritizedComponent();
+        for (GuiComponent guiComponent : componentList) {
+            guiComponent.mouseScrolled(Gdx.input.getX(), Gdx.input.getY(), amount, guiComponent == prioritizedComponent);
+        }
+        return false;
+    }
+
     public boolean clickedOnComponent(int x, int y) {
         for (GuiComponent component : componentList) {
             if (component instanceof GuiButton) {
