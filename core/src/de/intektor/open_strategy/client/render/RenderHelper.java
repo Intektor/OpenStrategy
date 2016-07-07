@@ -12,11 +12,13 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
-import de.intektor.open_strategy.OpenStrategy;
+import de.intektor.open_strategy.utils.FontHelper;
 
 import javax.vecmath.Point2f;
 import javax.vecmath.Point3f;
 import javax.vecmath.Vector2f;
+
+import static de.intektor.open_strategy.OpenStrategy.layout;
 
 /**
  * @author Intektor
@@ -39,11 +41,21 @@ public class RenderHelper {
     }
 
     public static void drawString(float x, float y, String string, BitmapFont font, Batch batch, boolean centerX, boolean centerY) {
-        OpenStrategy.layout.setText(font, string);
-        float rx = centerX ? x - OpenStrategy.layout.width / 2 : x;
-        float ry = centerY ? y + OpenStrategy.layout.height / 2 : y;
+        layout.reset();
+        layout.setText(font, string);
+        float rx = centerX ? x - layout.width / 2 : x;
+        float ry = centerY ? y + layout.height / 2 : y;
         font.draw(batch, string, rx, ry);
     }
+
+    public static void drawSplitString(float x, float y, float width, String string, BitmapFont font, Batch batch, int fontHeight) {
+        int i = 0;
+        for (String s : FontHelper.splitString(string, width, font)) {
+            drawString(x, y - (i * fontHeight), s, font, batch);
+            i++;
+        }
+    }
+
 
     public static void renderPolygon3D(Camera camera, Polygon polygon, Color color) {
         lineRenderer.begin(camera.combined, GL30.GL_LINES);

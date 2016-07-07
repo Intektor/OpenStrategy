@@ -14,6 +14,7 @@ import de.intektor.open_strategy.net.ConnectionHelper;
 import de.intektor.open_strategy.net.server.OpenStrategyServer;
 
 import java.util.Arrays;
+import java.util.Random;
 
 /**
  * @author Intektor
@@ -22,7 +23,7 @@ public class CreateLobby extends Gui {
 
     final int BUTTON_START_LOBBY = 1;
     final int MULTI_SWITCH_LOBBY_TYPE = 0, MULTI_SWITCH_MAX_PLAYERS = 1;
-    final int TEXT_FIELD_GATEWAY = 0, TEXT_FIELD_PORT = 1;
+    final int TEXT_FIELD_GATEWAY = 0, TEXT_FIELD_PORT = 1, TEXT_FIELD_USERNAME = 2;
 
     @Override
     public void render(ShapeRenderer renderer, int mouseX, int mouseY) {
@@ -53,6 +54,8 @@ public class CreateLobby extends Gui {
 
                     os.setIntegratedServer(server);
 
+                    os.username = getTextFieldByID(TEXT_FIELD_USERNAME).convertText();
+
                     os.connection = ConnectionHelper.connectClient("127.0.0.1", port);
                 } else {
 
@@ -77,8 +80,10 @@ public class CreateLobby extends Gui {
     public void addComponents() {
         addComponent(new GuiMultiSwitch(0, height - 100, 300, 20, true, Arrays.asList("LAN", "World Wide"), 0, MULTI_SWITCH_LOBBY_TYPE, "Lobby Type: "));
         addComponent(new GuiMultiSwitch(0, height - 200, 300, 20, true, Arrays.asList("1", "2", "3", "4"), 0, MULTI_SWITCH_MAX_PLAYERS, "Max Players: "));
-        addComponent(new GuiTextField(310, height - 120, 300, 40, TEXT_FIELD_GATEWAY, false, 1000, true, true, "Gateway", ""));
+        addComponent(new GuiTextField(310, height - 120, 300, 40, TEXT_FIELD_GATEWAY, false, 1000, true, true, true, "", "Gateway"));
         addComponent(new GuiNumberField(0, height - 160, 300, 40, TEXT_FIELD_PORT, true, 5, "Port", "27013", false));
+        Random r = new Random();
+        addComponent(new GuiTextField(0, height - 260, 300, 40, TEXT_FIELD_USERNAME, true, 30, true, true, false, "Player" + r.nextInt(1000), "Username"));
         addComponent(new GuiButton(0, height - 300, 300, 20, "Create Lobby", BUTTON_START_LOBBY, true));
     }
 }

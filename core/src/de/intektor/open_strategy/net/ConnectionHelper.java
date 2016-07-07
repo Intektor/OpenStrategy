@@ -7,6 +7,8 @@ import de.intektor.open_strategy.OpenStrategy;
 import de.intektor.open_strategy.net.packet.Packet;
 import de.intektor.open_strategy.net.packet.PacketHelper;
 
+import java.io.IOException;
+
 import static com.badlogic.gdx.Net.Protocol.TCP;
 
 /**
@@ -23,10 +25,15 @@ public class ConnectionHelper {
         new Thread() {
             @Override
             public void run() {
-                while (OpenStrategy.getOpenStrategy().gameRunning && connection.isActive) {
-                    Packet packet = PacketHelper.readPacket(connection.getIn());
-                    if (packet != null) {
+                boolean active = true;
+                while (OpenStrategy.getOpenStrategy().gameRunning && active) {
+                    try {
+
+                        Packet packet = PacketHelper.readPacket(connection.getIn());
                         packet.handle(connection, Side.CLIENT);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        active = false;
                     }
                 }
             }

@@ -31,13 +31,16 @@ public class LobbyChatMessagePacket implements Packet {
     @Override
     public void write(DataOutputStream out) throws IOException {
         out.writeUTF(message.getMessage());
-        out.writeUTF(message.getSender().uuid.toString());
-        out.writeUTF(message.getSender().playerName);
+        out.writeBoolean(message.getSender() != null);
+        if (message.getSender() != null) {
+            out.writeUTF(message.getSender().uuid.toString());
+            out.writeUTF(message.getSender().playerName);
+        }
     }
 
     @Override
     public void read(DataInputStream in) throws IOException {
-        this.message = new ChatMessage(in.readUTF(), new PlayerInfo(UUID.fromString(in.readUTF()), in.readUTF()));
+        this.message = new ChatMessage(in.readUTF(), in.readBoolean() ? new PlayerInfo(UUID.fromString(in.readUTF()), in.readUTF()) : null);
     }
 
     @Override

@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import de.intektor.open_strategy.OpenStrategy;
+import de.intektor.open_strategy.client.gui.Gui;
 import de.intektor.open_strategy.client.render.RenderHelper;
 
 import java.util.ArrayList;
@@ -18,17 +19,18 @@ import java.util.List;
 public class GuiTextField extends GuiComponent {
 
     protected int maxChars, id;
-    protected boolean allowLetters, allowNumbers;
+    protected boolean allowLetters, allowNumbers, allowDots, activated;
 
     protected List<Character> text;
     protected String info = "";
 
-    public GuiTextField(int x, int y, int width, int height, int id, boolean isShown, int maxChars, boolean allowLetters, boolean allowNumbers, String info, String standard) {
+    public GuiTextField(int x, int y, int width, int height, int id, boolean isShown, int maxChars, boolean allowLetters, boolean allowNumbers, boolean allowDots, String standard, String info) {
         super(x, y, width, height, isShown);
         this.id = id;
         this.maxChars = maxChars;
         this.allowLetters = allowLetters;
         this.allowNumbers = allowNumbers;
+        this.allowDots = allowDots;
         this.info = info;
         text = new ArrayList<>();
         for (char c : standard.toCharArray()) {
@@ -60,29 +62,38 @@ public class GuiTextField extends GuiComponent {
 
     @Override
     public void keyDown(int keyCode, boolean isPrioritized) {
-        if (isPrioritized) {
-            if (keyCode == Input.Keys.BACKSPACE) {
-                removeChar();
-
-            } else if (keyCode == Input.Keys.ENTER) {
-                gui.setComponentPrioritized(null);
-            }
-        }
     }
 
     @Override
     public void keyTyped(char c, boolean isPrioritized) {
-        if (isPrioritized) {
-            addCharacter(c);
+        if (activated) {
+            if (c == '\b') {
+                if (text.size() > 0) {
+                    text.remove(text.size() - 1);
+                }
+            } else {
+                if (!Gdx.input.isKeyJustPressed(Input.Keys.SHIFT_LEFT)) {
+                    addCharacter(c);
+                }
+            }
         }
     }
 
     public void addCharacter(char c) {
         if (text.size() < maxChars) {
-            boolean isDigit = (c >= '0' && c <= '9') || c == '.';
+            boolean isDigit = (c >= '0' && c <= '9') || (allowDots && c == '.');
             if ((isDigit && allowNumbers) || ((Character.isLetter(c) || c == ' ') && allowLetters)) {
                 text.add(c);
             }
+        }
+    }
+
+    @Override
+    public void clicked(int mouseX, int mouseY, int button) {
+        if (Gui.isPointInRegion(x, y, x + width, y + height, mouseX, Gdx.graphics.getHeight() - mouseY)) {
+            activated = true;
+        } else {
+            activated = false;
         }
     }
 
@@ -101,8 +112,8 @@ public class GuiTextField extends GuiComponent {
     }
 
     @Override
-    public void onClicked(int x, int y) {
-        gui.setComponentPrioritized(this);
+    public void clickedOnComponent(int x, int y, int button) {
+
     }
 
     public void setText(String text) {

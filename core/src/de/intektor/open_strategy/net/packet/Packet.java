@@ -30,4 +30,10 @@ public interface Packet {
             e.printStackTrace();
         }
     }
+
+    default void sendToAll() {
+        for (ConnectionInfo connectionInfo : OpenStrategy.getOpenStrategy().getIntegratedServer().connectedPlayers.values()) {
+            send(connectionInfo);
+        }
+    }
 }

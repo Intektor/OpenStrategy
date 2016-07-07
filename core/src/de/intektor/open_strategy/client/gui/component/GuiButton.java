@@ -139,8 +139,8 @@ public class GuiButton extends GuiComponent {
         }
 
         @Override
-        public void onClicked(int x, int y) {
-            super.onClicked(x, y);
+        public void clickedOnComponent(int x, int y, int button) {
+            super.clickedOnComponent(x, y, button);
             setOn(!on);
         }
 
@@ -167,8 +167,8 @@ public class GuiButton extends GuiComponent {
         }
 
         @Override
-        public void onClicked(int x, int y) {
-            super.onClicked(x, y);
+        public void clickedOnComponent(int x, int y, int button) {
+            super.clickedOnComponent(x, y, button);
             int next;
             if (current + 1 == list.size()) {
                 next = 0;

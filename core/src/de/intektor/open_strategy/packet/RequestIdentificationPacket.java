@@ -8,7 +8,6 @@ import de.intektor.open_strategy.net.packet.Packet;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Random;
 
 /**
  * @author Intektor
@@ -31,8 +30,7 @@ public class RequestIdentificationPacket implements Packet {
     public void handle(ConnectionInfo from, Side side) {
         if (side == Side.CLIENT) {
             OpenStrategy.getOpenStrategy().addScheduledTask(() -> {
-                Random r = new Random();
-                new IdentificationPacket("Player" + r.nextInt(10000)).sendToServer();
+                new IdentificationPacket(OpenStrategy.getOpenStrategy().username).sendToServer();
             });
         }
     }

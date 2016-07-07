@@ -31,7 +31,7 @@ public class GuiMultiSwitch extends GuiComponent {
     }
 
     @Override
-    public void onClicked(int mouseX, int mouseY) {
+    public void clickedOnComponent(int mouseX, int mouseY, int button) {
         int min = Math.min(width, height);
         if (Gui.isPointInRegion(x + width - min, y, x + width, y + min, mouseX, Gdx.graphics.getHeight() - mouseY)) {
             activated = !activated;
@@ -56,7 +56,6 @@ public class GuiMultiSwitch extends GuiComponent {
     public boolean isHoveredOver(int mouseX, int mouseY) {
         GuiComponent prioritizedComponent = gui.getPrioritizedComponent();
         return Gui.isPointInRegion(x, activated ? y - height * (choices.size()) : y, x + width, y + height, mouseX, Gdx.graphics.getHeight() - mouseY) && this.isShown && (prioritizedComponent == null || prioritizedComponent == this);
-
     }
 
     @Override

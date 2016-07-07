@@ -16,23 +16,18 @@ public class PacketHelper {
         packet.write(out);
     }
 
-    public static Packet readPacket(DataInputStream in) {
+    public static Packet readPacket(DataInputStream in) throws IOException {
+        int identifier = in.readInt();
+        Class<? extends Packet> packetClass;
+        Packet packet;
         try {
-            int identifier = in.readInt();
-            Class<? extends Packet> packetClass;
-            Packet packet;
-            try {
-                packetClass = PacketRegistry.INSTANCE.getClassByIdentifier(identifier);
-                packet = packetClass.newInstance();
-                packet.read(in);
-            } catch (InstantiationException | IllegalAccessException e) {
-                e.printStackTrace();
-                throw new RuntimeException();
-            }
-            return packet;
-        } catch (IOException e) {
+            packetClass = PacketRegistry.INSTANCE.getClassByIdentifier(identifier);
+            packet = packetClass.newInstance();
+            packet.read(in);
+        } catch (InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
+            throw new RuntimeException();
         }
-        return null;
+        return packet;
     }
 }

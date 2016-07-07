@@ -160,17 +160,18 @@ public abstract class Gui extends InputAdapter {
         GuiComponent prioritizedComponent = getPrioritizedComponent();
         for (GuiComponent component : componentList) {
             if (prioritizedComponent == null || component == prioritizedComponent) {
+                component.clicked(screenX, screenY, button);
                 if (component instanceof GuiButton && ((GuiButton) component).enabled) {
                     if (component.isHoveredOver(screenX, screenY)) {
                         setComponentPrioritized(null);
-                        component.onClicked(screenX, screenY);
+                        component.clickedOnComponent(screenX, screenY, button);
                         onButtonTouched(((GuiButton) component).id);
                         componentClicked(component, screenX, screenY);
                         success = true;
                     }
                 } else if (component instanceof GuiTextField) {
                     if (component.isHoveredOver(screenX, screenY)) {
-                        component.onClicked(screenX, screenY);
+                        component.clickedOnComponent(screenX, screenY, button);
                         success = true;
                         componentClicked(component, screenX, screenY);
                     } else {
@@ -180,7 +181,7 @@ public abstract class Gui extends InputAdapter {
                     }
                 } else {
                     if (component.isHoveredOver(screenX, screenY)) {
-                        component.onClicked(screenX, screenY);
+                        component.clickedOnComponent(screenX, screenY, button);
                         componentClicked(component, screenX, screenY);
                     } else {
                         setComponentPrioritized(null);

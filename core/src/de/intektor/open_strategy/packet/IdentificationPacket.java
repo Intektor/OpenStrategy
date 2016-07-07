@@ -1,6 +1,7 @@
 package de.intektor.open_strategy.packet;
 
 import de.intektor.open_strategy.OpenStrategy;
+import de.intektor.open_strategy.client.chat.ChatMessage;
 import de.intektor.open_strategy.net.ConnectionInfo;
 import de.intektor.open_strategy.net.Side;
 import de.intektor.open_strategy.net.packet.Packet;
@@ -43,9 +44,10 @@ public class IdentificationPacket implements Packet {
             server.thread.addScheduledTask(() -> {
                 PlayerInfo playerInfo = new PlayerInfo(UUID.randomUUID(), playerName);
                 UUID uuid = UUID.randomUUID();
+                new IdentificationEndPacket(playerInfo).send(from);
+                new LobbyChatMessagePacket(new ChatMessage(playerName + " joined the lobby!", new PlayerInfo(UUID.randomUUID(), "Server"))).sendToAll();
                 server.playerInfoMap.put(uuid, playerInfo);
                 server.connectedPlayers.put(playerInfo, from);
-                new IdentificationEndPacket(playerInfo).send(from);
             });
         }
     }

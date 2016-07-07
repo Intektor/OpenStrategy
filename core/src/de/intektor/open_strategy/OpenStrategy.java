@@ -20,7 +20,9 @@ import de.intektor.open_strategy.packet.LobbyChatMessagePacket;
 import de.intektor.open_strategy.packet.RequestIdentificationPacket;
 import de.intektor.open_strategy.player.PlayerInfo;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static com.badlogic.gdx.Gdx.graphics;
@@ -60,6 +62,8 @@ public class OpenStrategy extends ApplicationAdapter {
     public Map<Integer, Gui> guiMap = new HashMap<>();
 
     private int currentGui;
+
+    public volatile String username;
 
     private volatile Queue<Runnable> tasks = new LinkedBlockingQueue<>();
 

@@ -8,13 +8,16 @@ import com.badlogic.gdx.net.Socket;
 import com.badlogic.gdx.net.SocketHints;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import de.intektor.open_strategy.client.chat.ChatMessage;
 import de.intektor.open_strategy.net.ConnectionInfo;
 import de.intektor.open_strategy.net.Side;
 import de.intektor.open_strategy.net.packet.Packet;
 import de.intektor.open_strategy.net.packet.PacketHelper;
+import de.intektor.open_strategy.packet.LobbyChatMessagePacket;
 import de.intektor.open_strategy.packet.RequestIdentificationPacket;
 import de.intektor.open_strategy.player.PlayerInfo;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -59,13 +62,21 @@ public class OpenStrategyServer {
                     new Thread() {
                         @Override
                         public void run() {
-                            while (runServer) {
-                                Packet packet = PacketHelper.readPacket(connection.getIn());
-                                if (packet != null) {
+                            boolean active = true;
+                            while (runServer && active) {
+                                try {
+                                    Packet packet = PacketHelper.readPacket(connection.getIn());
                                     if (onPacketReceivedPRE(connection, packet)) {
                                         packet.handle(connection, Side.SERVER);
                                         onPacketReceivedPOST(connection, packet);
                                     }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                    active = false;
+                                    PlayerInfo playerInfo = connectedPlayers.inverse().get(connection);
+                                    connectedPlayers.remove(playerInfo);
+                                    playerInfoMap.remove(playerInfo.uuid);
+                                    new LobbyChatMessagePacket(new ChatMessage(playerInfo.playerName + " left the lobby!", new PlayerInfo(UUID.randomUUID(), "Server"))).sendToAll();
                                 }
                             }
                         }

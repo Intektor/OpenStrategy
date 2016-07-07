@@ -115,7 +115,11 @@ public abstract class GuiComponent {
         return this;
     }
 
-    public void onClicked(int x, int y) {
+    public void clickedOnComponent(int x, int y, int button) {
+
+    }
+
+    public void clicked(int mouseX, int mouseY, int button) {
 
     }
 

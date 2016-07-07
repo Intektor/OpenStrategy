@@ -9,7 +9,7 @@ public class GuiNumberField extends GuiTextField {
     protected boolean decimal;
 
     public GuiNumberField(int x, int y, int width, int height, int id, boolean isShown, int maxChars, String info, String standard, boolean decimal) {
-        super(x, y, width, height, id, isShown, maxChars, false, true, info, standard);
+        super(x, y, width, height, id, isShown, maxChars, false, true, true, standard, info);
         this.decimal = decimal;
     }
 
