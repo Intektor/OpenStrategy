@@ -4,8 +4,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Intersector;
 import de.intektor.open_strategy.OpenStrategy;
 import de.intektor.open_strategy.client.gui.Gui;
 import de.intektor.open_strategy.client.gui.component.GuiComponent;
@@ -33,13 +35,16 @@ public class LobbyChat extends GuiComponent {
     int shownStringStartPos;
     int firstShownCharIndex;
 
-    public LobbyChat(int x, int y, int width, int height, boolean isShown) {
+    BitmapFont font;
+
+    public LobbyChat(int x, int y, int width, int height, boolean isShown, BitmapFont font) {
         super(x, y, width, height, isShown);
+        this.font = font;
     }
 
     public void publishChatMessage(ChatMessage message) {
         messages.add(message);
-        scrollAmount += 13;
+        scrollAmount += message.getFormattedMessage(this).size() * font.getLineHeight();
         checkScroll();
     }
 
@@ -73,14 +78,14 @@ public class LobbyChat extends GuiComponent {
     public void setShownStringStartPos(boolean right) {
         String written = convertToString(currentlyWritten);
         String shown = (String) written.subSequence(firstShownCharIndex, written.length());
-        float shownWidth = FontHelper.stringWidth(shown, OpenStrategy.consolas16);
+        float shownWidth = FontHelper.stringWidth(shown, font);
         if (shownWidth > this.width - 3) {
-            while (FontHelper.stringWidth(written, OpenStrategy.consolas16) + shownStringStartPos > this.width - 3) {
-                shownStringStartPos -= FontHelper.stringWidth((String) written.subSequence(firstShownCharIndex, ++firstShownCharIndex), OpenStrategy.consolas16);
+            while (FontHelper.stringWidth(written, font) + shownStringStartPos > this.width - 3) {
+                shownStringStartPos -= FontHelper.stringWidth((String) written.subSequence(firstShownCharIndex, ++firstShownCharIndex), font);
             }
         } else if (shownWidth < this.width - 3 && written.length() > shown.length()) {
-            while (FontHelper.stringWidth(written, OpenStrategy.consolas16) + shownStringStartPos < this.width - 3) {
-                shownStringStartPos += FontHelper.stringWidth((String) written.subSequence(firstShownCharIndex - 1, firstShownCharIndex--), OpenStrategy.consolas16);
+            while (FontHelper.stringWidth(written, font) + shownStringStartPos < this.width - 3) {
+                shownStringStartPos += FontHelper.stringWidth((String) written.subSequence(firstShownCharIndex - 1, firstShownCharIndex--), font);
             }
         }
     }
@@ -102,7 +107,7 @@ public class LobbyChat extends GuiComponent {
         int height = 0;
         for (ChatMessage message : messages) {
             String string = message.getSender().playerName + ": " + message.getMessage();
-            height += (FontHelper.splitString(string, width - 15, OpenStrategy.consolas16).size()) * 16;
+            height += (FontHelper.splitString(string, width - 15, font).size()) * font.getLineHeight();
         }
         return height;
     }
@@ -164,7 +169,7 @@ public class LobbyChat extends GuiComponent {
                 boolean clickedInsideString = false;
                 for (int i = 0; i < written.length(); i++) {
                     String s = (String) written.subSequence(0, i);
-                    float v = FontHelper.stringWidth(s, OpenStrategy.consolas16);
+                    float v = FontHelper.stringWidth(s, font);
                     if (localClickX <= shownStringStartPos + v) {
                         cursorPosition = i;
                         clickedInsideString = true;
@@ -210,24 +215,27 @@ public class LobbyChat extends GuiComponent {
 
         sb.begin();
 
-        RenderHelper.drawString(x, y + 10, shown, OpenStrategy.consolas16, sb, false, true);
+        RenderHelper.drawString(x, y + 10, shown, font, sb, false, true);
         if (isPrioritized()) {
             if (cursorShown) {
-                RenderHelper.drawString(shownStringStartPos + x + FontHelper.stringWidth((String) written.subSequence(0, cursorPosition), OpenStrategy.consolas16) + 1, y + 10, "|", OpenStrategy.consolas16, sb, true, true);
+                RenderHelper.drawString(shownStringStartPos + x + FontHelper.stringWidth((String) written.subSequence(0, cursorPosition), font) + 1, y + 10, "|", font, sb, true, true);
             }
         }
+        Intersector.intersectRayBoundsFast()
         sb.end();
 
 
         Gdx.gl.glEnable(GL20.GL_SCISSOR_TEST);
         sb.begin();
 
-        int localY = scrollAmount;
+        int localY = y - scrollAmount;
         for (int i = 0; i < messages.size(); i++) {
             ChatMessage chatMessage = messages.get(i);
-            String string = chatMessage.getSender().playerName + ": " + chatMessage.getMessage();
-            RenderHelper.drawSplitString(x + 1, y + height + localY, width - 15, string, OpenStrategy.consolas16, sb, 16);
-            localY -= (FontHelper.splitString(string, width, OpenStrategy.consolas16).size()) * 16;
+            List<String> formattedMessage = chatMessage.getFormattedMessage(this);
+            for (String s : formattedMessage) {
+                font.draw(sb, s, x, Gdx.graphics.getHeight() - localY);
+                localY += font.getLineHeight();
+            }
         }
         sb.end();
         Gdx.gl.glScissor(x, y + 20, width, height - 20);

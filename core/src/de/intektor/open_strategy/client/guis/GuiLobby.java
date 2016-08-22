@@ -1,6 +1,7 @@
 package de.intektor.open_strategy.client.guis;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import de.intektor.open_strategy.OpenStrategy;
 import de.intektor.open_strategy.client.chat.LobbyChat;
 import de.intektor.open_strategy.client.gui.Gui;
 import de.intektor.open_strategy.client.gui.component.GuiMultiSwitch;
@@ -48,7 +49,7 @@ public class GuiLobby extends Gui {
 
     @Override
     public void addComponents() {
-        chat = new LobbyChat(width / 2 - 350, height / 2 - 250, 700, 500, true);
+        chat = new LobbyChat(width / 2 - 350, height / 2 - 250, 700, 500, true, OpenStrategy.consolas16);
         addComponent(chat);
     }
 }

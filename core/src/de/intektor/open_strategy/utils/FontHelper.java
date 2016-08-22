@@ -12,11 +12,16 @@ import java.util.List;
 public class FontHelper {
 
     public static float stringWidth(String string, BitmapFont font) {
-        return new GlyphLayout(font, string).width;
+        GlyphLayout.GlyphRun run = new GlyphLayout.GlyphRun();
+        font.getData().getGlyphs(run, string, 0, string.length(), false);
+        for (float f : run.xAdvances.items) {
+            run.width += f;
+        }
+        return run.width;
     }
 
     public static float stringHeight(String string, BitmapFont font) {
-        return new GlyphLayout(font, string).height;
+        return font.getAscent();
     }
 
     public static List<String> splitString(String string, float width, BitmapFont font) {
